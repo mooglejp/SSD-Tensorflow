@@ -308,6 +308,15 @@ def main(_):
                 checkpoint_path = FLAGS.checkpoint_path
             tf.logging.info('Evaluating %s' % checkpoint_path)
 
+            def flatten(x):
+                result = []
+                for el in x:
+                    if isinstance(el, tuple):
+                        result.extend(flatten(el))
+                    else:
+                        result.append(el)
+                return result
+
             # Standard evaluation loop.
             start = time.time()
             slim.evaluation.evaluate_once(
@@ -315,7 +324,7 @@ def main(_):
                 checkpoint_path=checkpoint_path,
                 logdir=FLAGS.eval_dir,
                 num_evals=num_batches,
-                eval_op=list(names_to_updates.values()),
+                eval_op=flatten(list(names_to_updates.values())),
                 variables_to_restore=variables_to_restore,
                 session_config=config)
             # Log time spent.
